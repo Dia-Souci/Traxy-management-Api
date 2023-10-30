@@ -47,7 +47,7 @@ app.use('/api/annexes/',annexeRoute)
 app.use('/api/interventions',interventionRoute)
 
 app.use("/", (req, res, next) => {
-    res.status(404).json("page not hello");
+    res.status(404).json("you are in 404 Api route, please redirect to a functional route");
     next();
 });
   
