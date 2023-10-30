@@ -15,7 +15,7 @@ const cors = require("cors");
 
 app.use(
     cors({
-      origin: ["http://localhost:3000","https://traxy-management-client.vercel.app"],
+      origin: ["http://localhost:3000","https://traxy-management-client.vercel.app/"],
     })
 );
 
