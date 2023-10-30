@@ -61,9 +61,9 @@ app.use("/", (req, res, next) => {
 
 
 
-let Port = 5000;
+let Port = 5000 || process.env.PORT;
 app.listen(
-  Port,
+  Port || process.env.PORT,
   console.log(`Server is running on port ${Port}...`.yellow.bold)
 );
 
