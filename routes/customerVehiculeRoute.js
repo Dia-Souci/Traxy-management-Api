@@ -124,8 +124,8 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
                 console.log("vehicule saved",vehicule)
             )
 
-            await customerModel.findByIdAndUpdate(customer_id,{$push : {vehicules : vehicule}}).then(console.log('vehicule pushed'))
-            await customerModel.findByIdAndUpdate(customer_id,{$inc : {vehicule_number : 1}}).then(console.log('vehicule count inc'))
+            await customerModel.findByIdAndUpdate(customer_id,{$push : {vehicules : vehicule}})
+            await customerModel.findByIdAndUpdate(customer_id,{$inc : {vehicule_number : 1}})
             const customer = await customerModel.findById(customer_id)
             if(customer!==null){
                 res.status(200).json({
