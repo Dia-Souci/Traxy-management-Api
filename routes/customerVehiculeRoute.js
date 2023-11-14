@@ -7,7 +7,7 @@ const cron = require('node-cron');
 
 router.use(requireAuth)
 
-cron.schedule('* * * * * *', async () => {
+cron.schedule('* * * * *', async () => {
     const activeCars = await vehiculeModel.find({activation_timer : {$gt : 0}})
     const carsPayement = activeCars.filter((car)=> car.status === 'active')
     const currentDate = new Date();
@@ -16,7 +16,7 @@ cron.schedule('* * * * * *', async () => {
             const customer = await customerModel.findOne({_id : car.owner_ID})
             if(customer.balance < 900){
                 await vehiculeModel.updateOne({_id:car._id},{$set:{status : 'disabled'}})
-                await customerModel.updateOne({_id:customer._id},{$pull:{vehicules:car}})
+                await customerModel.updateOne({_id:customer._id},{$pull:{vehicules:{_id : car._id}}})
                 car.status = 'disabled'
                 await customerModel.updateOne({_id:customer._id},{$push:{vehicules:car}})
 
@@ -30,7 +30,7 @@ cron.schedule('* * * * * *', async () => {
                 car.next_payemnt = nextPaymentDate;
                 const carOld = await vehiculeModel.findOne({_id:car._id})
                 await customerModel.updateOne({_id : customer._id},{$set:{balance : newBalance}})
-                await customerModel.updateOne({_id:customer._id},{$pull:{vehicules:carOld}})
+                await customerModel.updateOne({_id:customer._id},{$pull:{vehicules:{_id : carOld._id}}})
                 await customerModel.updateOne({_id:customer._id},{$push:{vehicules:car}})
                 await vehiculeModel.updateOne({_id:car._id},{$set:{activation_timer : car.activation_timer , next_payemnt : car.next_payemnt }})
                 console.log(car.next_payemnt)
@@ -122,13 +122,13 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
 
             })
             await vehicule.save()
-            if(customer1.vehicules.filter(e => e._id === vehicule._id).length === 0){
-                await customerModel.UpdateOne(
-                    {_id : customer_id},
-                    { $push: { vehicules: vehicule } }
-                );
-                await customerModel.UpdateOne({_id : customer_id},{$inc : {vehicule_number : 1}})
-            }
+            
+            await customerModel.UpdateOne(
+                {_id : customer_id},
+                { $push: { vehicules: vehicule } }
+            );
+            await customerModel.UpdateOne({_id : customer_id},{$inc : {vehicule_number : 1}})
+        
             
             
             const customer = await customerModel.findById(customer_id)
@@ -280,7 +280,7 @@ router.delete('/deletevehicule/:customerID/:id',async (req,res) =>{
         const id = req.params.id
         const customerID = req.params.customerID
         const vehicule = await vehiculeModel.findByIdAndDelete(id)
-        await customerModel.updateOne({_id:customerID},{$pull:{vehicules:vehicule}})
+        await customerModel.updateOne({_id:customerID},{$pull:{vehicules:{_id : vehicule._id}}})
         await customerModel.updateOne({_id:customerID},{$inc:{vehicule_number:-1}})
         if(vehicule!==null){
             res.status(200).json({
