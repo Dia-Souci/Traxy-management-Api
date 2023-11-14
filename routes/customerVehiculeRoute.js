@@ -1,4 +1,5 @@
 const router = require('express').Router()
+const mongoose = require('mongoose')
 const customerModel = require('../models/customerSchema')
 const vehiculeModel = require('../models/vehiculeSchema')
 const requireAuth = require('../Middleware/requireAuth')
@@ -91,6 +92,8 @@ router.post('/addDummyvehicule/:customerID', async (req,res)=>{
 
 
 router.post('/addvehicule/:customerID', async (req,res)=>{
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         const customer_id = req.params.customerID
         const customer1 = await customerModel.findById(customer_id)
@@ -120,14 +123,19 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
                 plan: req.body.plan
 
             })
-            await vehicule.save().then(
-                console.log("vehicule saved",vehicule)
-            )
-
-            await customerModel.findByIdAndUpdate(customer_id,{$push : {vehicules : vehicule}})
+            await vehicule.save()
+            await customerModel.findByIdAndUpdate(
+                customer_id,
+                { $addToSet: { vehicules: vehicule } },
+                { session }
+            );
             await customerModel.findByIdAndUpdate(customer_id,{$inc : {vehicule_number : 1}})
             const customer = await customerModel.findById(customer_id)
+            
+
             if(customer!==null){
+                await session.commitTransaction();
+                session.endSession();
                 res.status(200).json({
                     status:"Success",
                     customer,
@@ -136,6 +144,9 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
             }
 
         }else{
+            await session.abortTransaction();
+            session.endSession();
+
             res.status(404).json({
                 status:"Failed",
                 message:'unmatched ID'
@@ -143,6 +154,9 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
         }
 
     } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+
         res.status(500).json({
             status:'failed',
             message:'server Error',
