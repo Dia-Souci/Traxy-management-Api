@@ -124,8 +124,8 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
 
             })
             await vehicule.save()
-            await customerModel.findByIdAndUpdate(
-                customer_id,
+            await customerModel.UpdateOne(
+                {_id : customer_id},
                 { $addToSet: { vehicules: vehicule } },
                 { session }
             );
