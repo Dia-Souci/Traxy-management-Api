@@ -124,11 +124,14 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
 
             })
             await vehicule.save()
-            await customerModel.UpdateOne(
-                {_id : customer_id},
-                { $addToSet: { vehicules: vehicule } },
-                { session }
-            );
+            if(!customer1.vehicules.includes(vehicule)){
+                await customerModel.UpdateOne(
+                    {_id : customer_id},
+                    { $addToSet: { vehicules: vehicule } },
+                    { session }
+                );
+            }
+            
             await customerModel.findByIdAndUpdate(customer_id,{$inc : {vehicule_number : 1}})
             const customer = await customerModel.findById(customer_id)
             
