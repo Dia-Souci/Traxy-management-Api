@@ -122,7 +122,7 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
 
             })
             await vehicule.save()
-            if(customer1.vehicules.filter(e => e._id === vehicule._id).length > 0){
+            if(customer1.vehicules.filter(e => e._id === vehicule._id).length === 0){
                 await customerModel.UpdateOne(
                     {_id : customer_id},
                     { $push: { vehicules: vehicule } }
