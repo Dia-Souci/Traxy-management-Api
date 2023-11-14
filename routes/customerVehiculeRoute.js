@@ -92,8 +92,6 @@ router.post('/addDummyvehicule/:customerID', async (req,res)=>{
 
 
 router.post('/addvehicule/:customerID', async (req,res)=>{
-    const session = await mongoose.startSession();
-    session.startTransaction();
     try {
         const customer_id = req.params.customerID
         const customer1 = await customerModel.findById(customer_id)
@@ -124,21 +122,19 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
 
             })
             await vehicule.save()
-            if(!customer1.vehicules.includes(vehicule)){
+            if(!customer1.vehicules.filter(e => e._id === vehicule._id).length > 0){
                 await customerModel.UpdateOne(
                     {_id : customer_id},
-                    { $addToSet: { vehicules: vehicule } },
-                    { session }
+                    { $push: { vehicules: vehicule } }
                 );
+                await customerModel.UpdateOne({_id : customer_id},{$inc : {vehicule_number : 1}})
             }
             
-            await customerModel.findByIdAndUpdate(customer_id,{$inc : {vehicule_number : 1}})
+            
             const customer = await customerModel.findById(customer_id)
             
 
             if(customer!==null){
-                await session.commitTransaction();
-                session.endSession();
                 res.status(200).json({
                     status:"Success",
                     customer,
@@ -147,8 +143,6 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
             }
 
         }else{
-            await session.abortTransaction();
-            session.endSession();
 
             res.status(404).json({
                 status:"Failed",
@@ -157,9 +151,6 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
         }
 
     } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
-
         res.status(500).json({
             status:'failed',
             message:'server Error',
