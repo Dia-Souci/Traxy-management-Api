@@ -7,7 +7,7 @@ const cron = require('node-cron');
 
 router.use(requireAuth)
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('* * * * * *', async () => {
     const activeCars = await vehiculeModel.find({activation_timer : {$gt : 0}})
     const carsPayement = activeCars.filter((car)=> car.status === 'active')
     const currentDate = new Date();
