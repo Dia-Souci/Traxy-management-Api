@@ -133,6 +133,7 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
             
             const customer = await customerModel.findById(customer_id)
             
+            setTimeout(3000)
 
             if(customer!==null){
                 res.status(200).json({
