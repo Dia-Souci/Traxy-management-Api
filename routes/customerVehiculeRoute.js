@@ -123,10 +123,10 @@ router.post('/addvehicule/:customerID', async (req,res)=>{
             })
             await vehicule.save()
             
-            await customerModel.findByIdAndUpdate(
-                customer_id,
-                { $push: { vehicules: vehicule } }
-            );
+            await customerModel.updateOne(
+                { _id: 1 },
+                { $addToSet: { vehicules: vehicule } }
+             )
             await customerModel.findByIdAndUpdate(customer_id,{$inc : {vehicule_number : 1}})
         
             
